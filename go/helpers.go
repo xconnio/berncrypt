@@ -54,9 +54,9 @@ func AllZeros(b []byte) bool {
 }
 
 func DeriveKeyHKDF(sharedSecret, info []byte) ([]byte, error) {
-	h, err := blake2b.New256(nil)
+	h, err := blake2b.New512(nil)
 	if err != nil {
-		return nil, fmt.Errorf("blake2b.New256 failed: %s", err.Error())
+		return nil, fmt.Errorf("blake2b.New512 failed: %s", err.Error())
 	}
 
 	hashFunc := func() hash.Hash {
@@ -66,7 +66,7 @@ func DeriveKeyHKDF(sharedSecret, info []byte) ([]byte, error) {
 	hk := hkdf.New(hashFunc, sharedSecret, nil, info)
 
 	key := make([]byte, 32)
-	if _, err := io.ReadFull(hk, key); err != nil {
+	if _, err = io.ReadFull(hk, key); err != nil {
 		return nil, fmt.Errorf("failed to derive key: %w", err)
 	}
 
