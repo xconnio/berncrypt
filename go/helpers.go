@@ -2,12 +2,11 @@ package berncrypt
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
 	"crypto/subtle"
 	"fmt"
-	"hash"
 	"io"
 
-	"golang.org/x/crypto/blake2b"
 	"golang.org/x/crypto/chacha20poly1305"
 	"golang.org/x/crypto/curve25519"
 	"golang.org/x/crypto/hkdf"
@@ -54,19 +53,10 @@ func AllZeros(b []byte) bool {
 }
 
 func DeriveKeyHKDF(sharedSecret, info []byte) ([]byte, error) {
-	h, err := blake2b.New512(nil)
-	if err != nil {
-		return nil, fmt.Errorf("blake2b.New512 failed: %s", err.Error())
-	}
-
-	hashFunc := func() hash.Hash {
-		return h
-	}
-
-	hk := hkdf.New(hashFunc, sharedSecret, nil, info)
+	hk := hkdf.New(sha256.New, sharedSecret, nil, info)
 
 	key := make([]byte, 32)
-	if _, err = io.ReadFull(hk, key); err != nil {
+	if _, err := io.ReadFull(hk, key); err != nil {
 		return nil, fmt.Errorf("failed to derive key: %w", err)
 	}
 
@@ -74,7 +64,7 @@ func DeriveKeyHKDF(sharedSecret, info []byte) ([]byte, error) {
 }
 
 func EncryptChaCha20Poly1305(plaintext, key []byte) ([]byte, []byte, error) {
-	aead, err := chacha20poly1305.NewX(key)
+	aead, err := chacha20poly1305.New(key)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create ChaCha20-Poly1305 cipher: %w", err)
 	}
