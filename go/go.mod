@@ -1,4 +1,4 @@
-module github.com/xconnio/berncrypt
+module github.com/xconnio/berncrypt/go
 
 go 1.24.6
 
